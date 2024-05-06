@@ -53,9 +53,9 @@ To dissassemble the <b>.text</b> section :
   
 The encoded shellcode is loaded by initializing the register <b>rax</b> with a value, then pushing it into the stack. This process is repeated <b>14</b> times. At the end, the decoding key is set into the Callee Saved register <b>rbx</b>.
 
-The quickest/easiest approach would be to <b>pop</b> the values from the stack, <b>xor</b> them with the key in <b>rbx</b> and loop these steps 14 times. Then load the program in a debugger and take note of the decoded value at each step. I wanted to make it juste a little more fun by making a procedure that will do these steps, but will also print the entire decoded shellcode in my terminal, ready to be executed as is.
+The quickest/easiest approach would be to <b>pop</b> the values from the stack, <b>xor</b> them with the key in <b>rbx</b> and loop these steps 14 times. After that, load the program in a debugger and take note of the decoded value at each step. I wanted to make it just a little more fun by making a procedure that will do these steps, but will also print the entire decoded shellcode in my terminal, ready to be executed as is.
   
-The approach I came up with to decode the values is:
+The approach I came up with is:
 - <b>pop</b> the current stack pointer <b>rsp</b> into a register not used (<b>rdx</b> in my case)  
 - <b>xor</b> it with the value in <b>rbx</b>
 - print the value in <b>rdx</b> <b>libc</b> functions <b>printf</b> and <b>fflush</b>
