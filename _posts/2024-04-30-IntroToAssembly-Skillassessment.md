@@ -61,7 +61,8 @@ The approach I came up with to decode the values is:
 - print the value in <b>rdx</b> <b>libc</b> functions <b>printf</b> and <b>fflush</b>
 - loop these steps 14 times
 
-The format specifier used for <b>printf</b>: `outFormat db  "%016llx", 0x00`
+The format specifier used for <b>printf</b>:   
+`outFormat db  "%016llx", 0x00`
 
 - <b>0</b> : to pad the output with zeroes intead of spaces if minimum width is not met
 - <b>16</b> : field width specifier of 16 characters, will be padded to the left with zeros.
