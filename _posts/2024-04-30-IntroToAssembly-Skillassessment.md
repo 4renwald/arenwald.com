@@ -12,7 +12,7 @@ b {font-size:87.5%;color: #0398fc;word-wrap:break-word}
 This post is about the end of module assessment given for an introduction to assembly language course. Those are the solutions I came up with, don't mind sending me suggestions for improvement since i'm new to this. Also, this post is mostly for me and to keep track of my progress over time.
 
 ## Task 1
-For the first task, we're given a binary called <b>loaded_shellcode</b>. We have to dissassemble it, modify the assembly code to decode the shellcode loaded in it, then execute it to get the flag. The decoding key is stored in <b>rbx</b> (Called Saved)
+For the first task, we're given a binary called <b>loaded_shellcode</b>. We have to dissassemble it, modify the assembly code to decode the shellcode loaded in it, then execute it to get the flag. The decoding key is stored in the register <b>rbx</b> (Callee Saved)
 
 To dissassemble the <b>.text</b> section :  
   
