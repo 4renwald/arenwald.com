@@ -58,7 +58,7 @@ The quickest/easiest approach would be to <b>pop</b> the values from the stack, 
 The approach I came up with is:
 - <b>pop</b> the current stack pointer <b>rsp</b> into a register not used (<b>rdx</b> in my case)  
 - <b>xor</b> it with the value in <b>rbx</b>
-- print the value in <b>rdx</b> <b>libc</b> functions <b>printf</b> and <b>fflush</b>
+- print the value in <b>rdx</b> with <b>libc</b> functions <b>printf</b> and <b>fflush</b>
 - loop these steps 14 times
 
 The format specifier used for <b>printf</b>:   
