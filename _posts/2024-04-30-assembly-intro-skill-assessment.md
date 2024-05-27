@@ -174,7 +174,7 @@ HTB{4553mbly_d3bugg1ng_m4573r}$
 {: .nolineno }
 ## Task 2
 
-For the second task, in a binary exploitation exercise, we get to the point where we have to un our shellcode. A buffer space of 50 bytes is available. The exercice consist of optimizing the given assembly code to make it <b>shellcode-ready</b> and <b>under 50 bytes</b>.
+For the second task, in a binary exploitation exercise, we get to the point where we have to run our shellcode. A buffer space of 50 bytes is available. The exercice consist of optimizing the given assembly code to make it <b>shellcode-ready</b> and <b>under 50 bytes</b>.
 
 Before starting, a quick reminder about shellcoding requirements : 
 
