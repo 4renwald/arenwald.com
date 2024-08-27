@@ -8,7 +8,7 @@
   </a>
 </p>
 
-> Landing page for arenwald.com
+> Landing page for blog.arenwald.com
 
 ### 🏠 [Homepage](https://blog.arenwald.com)
 
