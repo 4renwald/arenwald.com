@@ -1,4 +1,4 @@
-<h1 align="center">You have reached the landing page for arenwald.com 👋</h1>
+<h1 align="center">You have reached the landing page for blog.arenwald.com 👋</h1>
 <p>
   <a href="#" target="_blank">
     <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" />
@@ -10,12 +10,12 @@
 
 > Landing page for arenwald.com
 
-### 🏠 [Homepage](https://arenwald.com)
+### 🏠 [Homepage](https://blog.arenwald.com)
 
 ## Author
 
 👤 **Arenwald**
 
-* Website: https://arenwald.com
+* Website: https://blog.arenwald.com
 * Twitter: [@arenwald](https://twitter.com/4renwald)
 * Github: [@4renwald](https://github.com/4renwald)
